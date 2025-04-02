@@ -60,6 +60,7 @@ flutter:
   assets:
     - lib/assets/pic1.png
     - lib/assets/pic2.png
+    - lib/assets/pic3.png
 
   #   - images/a_dot_ham.jpeg
 
