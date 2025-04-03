@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:tunesync/components/bybutton.dart';
 import 'package:tunesync/components/mytextfiled.dart';
@@ -7,6 +9,14 @@ class LoginPage extends StatelessWidget {
   LoginPage({super.key});
   final usernamecontroller = TextEditingController();
   final passwordcontroller = TextEditingController();
+
+  //sign user in method
+  void singUserIn() async {
+    await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: usernamecontroller.text,
+      password: passwordcontroller.text,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,12 +31,25 @@ class LoginPage extends StatelessWidget {
                 height: 50,
               ),
               // logo
-              Image.asset(
-                'lib/assets/pic2.png',
-                width: 250,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                child: Image.asset(
+                  'lib/assets/pic2.png',
+                  width: 250,
+                ),
               ),
               const SizedBox(
-                height: 50,
+                height: 10,
+              ),
+              Text(
+                'Your Music, Your Way.',
+                style: TextStyle(
+                  color: const Color.fromARGB(255, 238, 25, 25),
+                  fontSize: 25,
+                ),
+              ),
+              const SizedBox(
+                height: 20,
               ),
 
               //welcome back
@@ -80,7 +103,7 @@ class LoginPage extends StatelessWidget {
 
               //sign in button
               MyButton(
-                onTap: () {},
+                onTap: singUserIn,
               ),
               const SizedBox(
                 height: 40,

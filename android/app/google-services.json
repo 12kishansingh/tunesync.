@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "619248145966",
+    "project_id": "tunesync-f277f",
+    "storage_bucket": "tunesync-f277f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:619248145966:android:ecf20e388f7f744ba9f1bf",
+        "android_client_info": {
+          "package_name": "com.example.tunesync"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDg0vT4hkguELiQ553YoUagAk4tgXvzZQ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
