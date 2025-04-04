@@ -7,6 +7,7 @@ import 'package:tunesync/pages/loginpage.dart';
 // to check if user is signed in or not
 class AuthPage extends StatelessWidget {
   const AuthPage({super.key});
+  
 
   @override
   Widget build(BuildContext context) {

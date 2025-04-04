@@ -5,17 +5,81 @@ import 'package:tunesync/components/bybutton.dart';
 import 'package:tunesync/components/mytextfiled.dart';
 import 'package:tunesync/components/squretile.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final usernamecontroller = TextEditingController();
+
   final passwordcontroller = TextEditingController();
 
   //sign user in method
   void singUserIn() async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: usernamecontroller.text,
-      password: passwordcontroller.text,
-    );
+    //show loading circle
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        });
+
+    // try sign in
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: usernamecontroller.text,
+        password: passwordcontroller.text,
+      );
+      //pop the loading circle
+      Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      //pop the loading circle
+      Navigator.pop(context);
+      //wrong email
+      if (e.code == 'user-not-found') {
+        //print('No user found');
+        wrongEmailMessage();
+      }
+      // wrong password
+      else if (e.code == 'wrong-password') {
+        //print('wrong password');
+        wrongPasswordMessage();
+      }
+    }
+  }
+
+  // wrong email popup
+  void wrongEmailMessage() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return const AlertDialog(
+            backgroundColor: Colors.deepPurple,
+            title: Text(
+              'Incorrect Email',
+              style: TextStyle(color: Colors.white),
+            ),
+          );
+        });
+  }
+
+  //wrong passwrod popup
+  void wrongPasswordMessage() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return const AlertDialog(
+            backgroundColor: Colors.deepPurple,
+            title: Text(
+              'Incorrect Password',
+              style: TextStyle(color: Colors.white),
+            ),
+          );
+        });
   }
 
   @override
@@ -24,153 +88,155 @@ class LoginPage extends StatelessWidget {
       backgroundColor: Colors.grey[300],
       body: SafeArea(
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(
-                height: 50,
-              ),
-              // logo
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                child: Image.asset(
-                  'lib/assets/pic2.png',
-                  width: 250,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(
+                  height: 50,
                 ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Text(
-                'Your Music, Your Way.',
-                style: TextStyle(
-                  color: const Color.fromARGB(255, 238, 25, 25),
-                  fontSize: 25,
+                // logo
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                  child: Image.asset(
+                    'lib/assets/pic2.png',
+                    width: 250,
+                  ),
                 ),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-
-              //welcome back
-              Text(
-                'Welcome back!!!',
-                style: TextStyle(
-                  color: Colors.grey[700],
-                  fontSize: 16,
+                const SizedBox(
+                  height: 10,
                 ),
-              ),
-              const SizedBox(
-                height: 25,
-              ),
+                Text(
+                  'Your Music, Your Way.',
+                  style: TextStyle(
+                    color: const Color.fromARGB(255, 238, 25, 25),
+                    fontSize: 25,
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
 
-              // username textfield
-              Mytextfiled(
-                controller: usernamecontroller,
-                hinttext: 'Username',
-                obscuretext: false,
-              ),
+                //welcome back
+                Text(
+                  'Welcome back!!!',
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(
+                  height: 25,
+                ),
 
-              const SizedBox(
-                height: 10,
-              ),
-              //passowrd textfield
-              Mytextfiled(
-                controller: passwordcontroller,
-                hinttext: 'Password',
-                obscuretext: true,
-              ),
-              const SizedBox(
-                height: 10,
-              ),
+                // username textfield
+                Mytextfiled(
+                  controller: usernamecontroller,
+                  hinttext: 'Username',
+                  obscuretext: false,
+                ),
 
-              //forgot password
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                const SizedBox(
+                  height: 10,
+                ),
+                //passowrd textfield
+                Mytextfiled(
+                  controller: passwordcontroller,
+                  hinttext: 'Password',
+                  obscuretext: true,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+
+                //forgot password
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Forgot Password?',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 25,
+                ),
+
+                //sign in button
+                MyButton(
+                  onTap: singUserIn,
+                ),
+                const SizedBox(
+                  height: 40,
+                ),
+                // or continue with
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Divider(
+                          thickness: .5,
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: Text('Or Continue With'),
+                      ),
+                      Expanded(
+                        child: Divider(
+                          thickness: .5,
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 50,
+                ),
+
+                // google sign in button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // google
+                    SquareTile(imagepath: 'lib/assets/pic1.png'),
+
+                    // apple
+                    const SizedBox(
+                      width: 10,
+                    ),
+
+                    SquareTile(imagepath: 'lib/assets/pic3.png'),
+                  ],
+                ),
+                const SizedBox(
+                  height: 50,
+                ),
+                // not a member , sign up!!!
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Not a member?'),
+                    const SizedBox(
+                      width: 4,
+                    ),
                     Text(
-                      'Forgot Password?',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: 25,
-              ),
-
-              //sign in button
-              MyButton(
-                onTap: singUserIn,
-              ),
-              const SizedBox(
-                height: 40,
-              ),
-              // or continue with
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Divider(
-                        thickness: .5,
-                        color: Colors.grey[400],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Text('Or Continue With'),
-                    ),
-                    Expanded(
-                      child: Divider(
-                        thickness: .5,
-                        color: Colors.grey[400],
+                      'Register now',
+                      style: TextStyle(
+                        color: Colors.blue,
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(
-                height: 50,
-              ),
-
-              // google sign in button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // google
-                  SquareTile(imagepath: 'lib/assets/pic1.png'),
-
-                  // apple
-                  const SizedBox(
-                    width: 10,
-                  ),
-
-                  SquareTile(imagepath: 'lib/assets/pic3.png'),
-                ],
-              ),
-              const SizedBox(
-                height: 50,
-              ),
-              // not a member , sign up!!!
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Not a member?'),
-                  const SizedBox(
-                    width: 4,
-                  ),
-                  Text(
-                    'Register now',
-                    style: TextStyle(
-                      color: Colors.blue,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
