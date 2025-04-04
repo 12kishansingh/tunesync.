@@ -5,21 +5,21 @@ import 'package:tunesync/components/bybutton.dart';
 import 'package:tunesync/components/mytextfiled.dart';
 import 'package:tunesync/components/squretile.dart';
 
-class LoginPage extends StatefulWidget {
+class RegisterPage extends StatefulWidget {
   final Function()? onTap;
-  const LoginPage({super.key,required this.onTap});
+  const RegisterPage({super.key,required this.onTap});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final usernamecontroller = TextEditingController();
 
   final passwordcontroller = TextEditingController();
 
-  //sign user in method
-  void singUserIn() async {
+  //sign user up method
+  void singUserUp() async {
     //show loading circle
     showDialog(
         context: context,
@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
           );
         });
 
-    // try sign in
+    // try sign up /create the user 
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: usernamecontroller.text,
@@ -126,6 +126,18 @@ class _LoginPageState extends State<LoginPage> {
                 Mytextfiled(
                   controller: passwordcontroller,
                   hinttext: 'Password',
+                  obscuretext: true,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                 const SizedBox(
+                  height: 10,
+                ),
+                //passowrd textfield
+                Mytextfiled(
+                  controller: passwordcontroller,
+                  hinttext: 'Confirm Password',
                   obscuretext: true,
                 ),
                 const SizedBox(
