@@ -102,7 +102,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 //welcome back
                 Text(
-                  'Welcome back!!!',
+                  'Let\' create an account.',
                   style: TextStyle(
                     color: Colors.grey[700],
                     fontSize: 16,
@@ -131,9 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(
                   height: 10,
                 ),
-                 const SizedBox(
-                  height: 10,
-                ),
+                 
                 //passowrd textfield
                 Mytextfiled(
                   controller: passwordcontroller,
@@ -163,7 +161,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 //sign in button
                 MyButton(
-                  onTap: singUserIn,
+                  onTap: singUserUp,
                 ),
                 const SizedBox(
                   height: 40,
@@ -218,14 +216,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Not a member?'),
+                    Text('Already have a account.'),
                     const SizedBox(
                       width: 4,
                     ),
                     GestureDetector(
                       onTap: widget.onTap,
                       child: Text(
-                        'Register now',
+                        'LogIn Now',
                         style: TextStyle(
                           color: Colors.blue,
                         ),

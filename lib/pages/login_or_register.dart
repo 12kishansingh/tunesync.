@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tunesync/pages/loginpage.dart';
+import 'package:tunesync/pages/register_page.dart';
 
 class LoginOrRegister extends StatefulWidget {
   const LoginOrRegister({super.key});
@@ -25,7 +26,9 @@ class _LoginOrRegisterState extends State<LoginOrRegister> {
         onTap: togglepages,
       );
     } else {
-      return RegisterPage();
+      return RegisterPage(
+        onTap: togglepages,
+      );
     }
   }
 }
