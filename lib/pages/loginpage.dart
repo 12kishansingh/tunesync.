@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:tunesync/components/bybutton.dart';
 import 'package:tunesync/components/mytextfiled.dart';
 import 'package:tunesync/components/squretile.dart';
+import 'package:tunesync/services/authservice.dart';
 
 class LoginPage extends StatefulWidget {
   final Function()? onTap;
-  const LoginPage({super.key,required this.onTap});
+  const LoginPage({super.key, required this.onTap});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -42,7 +43,6 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pop(context);
       //show error message
       showErrorMessage(e.code);
-      
     }
   }
 
@@ -56,14 +56,12 @@ class _LoginPageState extends State<LoginPage> {
             title: Center(
               child: Text(
                 message,
-                style:const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           );
         });
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -151,6 +149,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 //sign in button
                 MyButton(
+                  text: "Sign In",
                   onTap: singUserIn,
                 ),
                 const SizedBox(
@@ -189,14 +188,20 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // google
-                    SquareTile(imagepath: 'lib/assets/pic1.png'),
+                    SquareTile(
+                      imagepath: 'lib/assets/pic1.png',
+                      onTap: () => Authservice().signInWithGoogle(),
+                    ),
 
                     // apple
                     const SizedBox(
                       width: 10,
                     ),
 
-                    SquareTile(imagepath: 'lib/assets/pic3.png'),
+                    SquareTile(
+                      imagepath: 'lib/assets/pic3.png',
+                      onTap: () {},
+                    ),
                   ],
                 ),
                 const SizedBox(

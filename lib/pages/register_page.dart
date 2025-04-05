@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:tunesync/components/bybutton.dart';
 import 'package:tunesync/components/mytextfiled.dart';
 import 'package:tunesync/components/squretile.dart';
+import 'package:tunesync/services/authservice.dart';
 
 class RegisterPage extends StatefulWidget {
   final Function()? onTap;
@@ -17,6 +18,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final usernamecontroller = TextEditingController();
 
   final passwordcontroller = TextEditingController();
+  final confirmpasswordcontroller = TextEditingController();
 
   //sign user up method
   void singUserUp() async {
@@ -31,10 +33,17 @@ class _RegisterPageState extends State<RegisterPage> {
 
     // try sign up /create the user 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      //check if passoword and confirm password is same 
+      if(passwordcontroller.text==confirmpasswordcontroller.text){
+         await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: usernamecontroller.text,
         password: passwordcontroller.text,
       );
+      }
+      else{
+        // show the error message
+        showErrorMessage("Password Do Not Match!");
+      }
       //pop the loading circle
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
@@ -134,7 +143,7 @@ class _RegisterPageState extends State<RegisterPage> {
                  
                 //passowrd textfield
                 Mytextfiled(
-                  controller: passwordcontroller,
+                  controller: confirmpasswordcontroller,
                   hinttext: 'Confirm Password',
                   obscuretext: true,
                 ),
@@ -142,25 +151,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   height: 10,
                 ),
 
-                //forgot password
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Forgot Password?',
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                ),
+                
                 const SizedBox(
                   height: 25,
                 ),
 
                 //sign in button
                 MyButton(
+                  text: "Sign Up",
                   onTap: singUserUp,
                 ),
                 const SizedBox(
@@ -199,14 +197,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // google
-                    SquareTile(imagepath: 'lib/assets/pic1.png'),
+                    SquareTile(imagepath: 'lib/assets/pic1.png',onTap: ()=>Authservice().signInWithGoogle(),),
 
                     // apple
                     const SizedBox(
                       width: 10,
                     ),
 
-                    SquareTile(imagepath: 'lib/assets/pic3.png'),
+                    SquareTile(imagepath: 'lib/assets/pic3.png',onTap: (){},),
                   ],
                 ),
                 const SizedBox(
