@@ -124,7 +124,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 // username textfield
                 Mytextfiled(
                   controller: usernamecontroller,
-                  hinttext: 'Username',
+                  hinttext: 'Email',
                   obscuretext: false,
                 ),
 
