@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:tunesync/pages/Home/h1.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,11 +19,9 @@ class _HomePageState extends State<HomePage> {
     FirebaseAuth.instance.signOut();
   }
 
-  // Dummy content pages for each nav item
-  static List<Widget> _pages(String userEmail) => [
-        Center(
-            child: Text("Home Page\nLogged in as: $userEmail",
-                textAlign: TextAlign.center)),
+  // Content pages for each nav item
+  static List<Widget> _pages() => const [
+        HomePage1(),
         Center(child: Text("Connect Page")),
         Center(child: Text("Library Page")),
         Center(child: Text("Artists Page")),
@@ -43,7 +43,6 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              // TODO: Implement search functionality
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Search tapped')),
               );
@@ -52,9 +51,8 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.account_circle),
             onPressed: () {
-              // TODO: Show user profile or navigate to profile page
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Logged in as: ${user.email}")),
+                SnackBar(content: Text("Profile info")),
               );
             },
           ),
@@ -64,7 +62,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _pages(user.email!)[_selectedIndex],
+      body: _pages()[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         elevation: 8.0,
