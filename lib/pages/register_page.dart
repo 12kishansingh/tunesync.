@@ -39,6 +39,7 @@ class _RegisterPageState extends State<RegisterPage> {
         email: usernamecontroller.text,
         password: passwordcontroller.text,
       );
+      
       }
       else{
         // show the error message
