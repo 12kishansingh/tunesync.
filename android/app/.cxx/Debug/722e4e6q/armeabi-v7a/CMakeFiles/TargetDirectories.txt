@@ -1,0 +1,2 @@
+C:/Users/ks888/Documents/flutter_project/tunesync/android/app/.cxx/Debug/722e4e6q/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/ks888/Documents/flutter_project/tunesync/android/app/.cxx/Debug/722e4e6q/armeabi-v7a/CMakeFiles/rebuild_cache.dir
