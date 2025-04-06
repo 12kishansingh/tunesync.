@@ -1,29 +1,96 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
-   HomePage({super.key});
-  final user=FirebaseAuth.instance.currentUser!;
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
 
-  // signuserout method
-  void signUserOut(){
+class _HomePageState extends State<HomePage> {
+  final user = FirebaseAuth.instance.currentUser!;
+  int _selectedIndex = 0;
+
+  // Sign out method
+  void signUserOut() {
     FirebaseAuth.instance.signOut();
+  }
+
+  // Dummy content pages for each nav item
+  static List<Widget> _pages(String userEmail) => [
+        Center(
+            child: Text("Home Page\nLogged in as: $userEmail",
+                textAlign: TextAlign.center)),
+        Center(child: Text("Connect Page")),
+        Center(child: Text("Library Page")),
+        Center(child: Text("Artists Page")),
+      ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: const Text("TuneSync",
+            style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // TODO: Implement search functionality
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Search tapped')),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () {
+              // TODO: Show user profile or navigate to profile page
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Logged in as: ${user.email}")),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
             onPressed: signUserOut,
-            icon: Icon(Icons.logout),
           ),
         ],
       ),
-      body: Center(
-        child: Text("Logged in as: "+user.email!),
+      body: _pages(user.email!)[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        elevation: 8.0,
+        backgroundColor: Colors.purple,
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.teal,
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.link),
+            label: 'Connect',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.library_music),
+            label: 'Library',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Artists',
+          ),
+        ],
       ),
     );
   }
