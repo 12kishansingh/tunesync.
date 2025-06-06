@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:tunesync/pages/Home/artist_page.dart';
 import 'package:tunesync/pages/Home/h1.dart';
 
 
@@ -24,7 +25,8 @@ class _HomePageState extends State<HomePage> {
         HomePage1(),
         Center(child: Text("Connect Page")),
         Center(child: Text("Library Page")),
-        Center(child: Text("Artists Page")),
+       ArtistsPage(),
+
       ];
 
   void _onItemTapped(int index) {
