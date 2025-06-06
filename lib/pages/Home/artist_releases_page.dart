@@ -25,7 +25,7 @@ class _ArtistReleasesPageState extends State<ArtistReleasesPage> {
 
   Future<void> _fetchArtistReleases() async {
     final url = Uri.parse(
-      'https://api.discogs.com/artists/${widget.artistId}/releases?per_page=20&page=1&key=${DiscogsApi.consumerKey}&secret=${DiscogsApi.consumerSecret}',
+      'https://api.discogs.com/artists/${widget.artistId}/releases?per_page=20&page=1&key=${DiscogsAPI.consumerKey}&secret=${DiscogsAPI.consumerSecret}',
     );
 
     final response = await http.get(url);
