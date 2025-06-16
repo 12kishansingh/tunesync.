@@ -5,22 +5,22 @@ class DiscogsAPI {
   static const String baseUrl = 'https://api.discogs.com';
   static const String consumerKey = 'FnKdhVcWvNVrOsTbjLGU';
   static const String consumerSecret = 'fpnIISOgDWdnwFXZOhdaqnMczSrezimM';
+
+  // Existing methods
   static Future<Map<String, dynamic>?> searchGenre(String genre) async {
-  final url = Uri.parse(
-      '$baseUrl/database/search?genre=$genre&type=release&key=$consumerKey&secret=$consumerSecret');
+    final url = Uri.parse(
+        '$baseUrl/database/search?genre=$genre&type=release&key=$consumerKey&secret=$consumerSecret');
 
-  final response = await http.get(url);
+    final response = await http.get(url);
 
-  if (response.statusCode == 200) {
-    return json.decode(response.body);
-  } else {
-    print('Error fetching genre: ${response.statusCode}');
-    return null;
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      print('Error fetching genre: ${response.statusCode}');
+      return null;
+    }
   }
-}
 
-
-  /// Search artists by name
   static Future<Map<String, dynamic>?> searchArtist(String query) async {
     final url = Uri.parse(
       '$baseUrl/database/search?q=$query&type=artist&key=$consumerKey&secret=$consumerSecret',
@@ -40,7 +40,6 @@ class DiscogsAPI {
     }
   }
 
-  /// Get releases (songs/albums) for an artist by ID
   static Future<List<dynamic>?> getArtistReleases(int artistId) async {
     final url = Uri.parse(
       '$baseUrl/artists/$artistId/releases?key=$consumerKey&secret=$consumerSecret',
@@ -61,7 +60,6 @@ class DiscogsAPI {
     }
   }
 
-  /// Get featured genre-based search (simulates playlists)
   static Future<List<dynamic>?> searchByGenre(String genre) async {
     final url = Uri.parse(
       '$baseUrl/database/search?genre=$genre&type=release&key=$consumerKey&secret=$consumerSecret',
@@ -78,6 +76,26 @@ class DiscogsAPI {
       }
     } catch (e) {
       print('Error searching by genre: $e');
+      return null;
+    }
+  }
+
+  // New track search method with error handling
+  static Future<Map<String, dynamic>?> searchTrack(String title) async {
+    try {
+      final url = Uri.parse(
+        '$baseUrl/database/search?track=$title&type=release&key=$consumerKey&secret=$consumerSecret',
+      );
+      final response = await http.get(url);
+      
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        print('Failed track search: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error searching track: $e');
       return null;
     }
   }

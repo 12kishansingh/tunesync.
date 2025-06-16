@@ -2,7 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:tunesync/pages/Home/artist_page.dart';
 import 'package:tunesync/pages/Home/h1.dart';
+import 'package:tunesync/pages/search_and_play.dart';
 
+import 'package:tunesync/widgets/mini_player.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,18 +17,15 @@ class _HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser!;
   int _selectedIndex = 0;
 
-  // Sign out method
   void signUserOut() {
     FirebaseAuth.instance.signOut();
   }
 
-  // Content pages for each nav item
   static List<Widget> _pages() => const [
         HomePage1(),
         Center(child: Text("Connect Page")),
         Center(child: Text("Library Page")),
-       ArtistsPage(),
-
+        ArtistsPage(),
       ];
 
   void _onItemTapped(int index) {
@@ -45,8 +44,11 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Search tapped')),
+              // Navigate to SearchAndPlayPage instead of showing SnackBar
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const SearchAndPlayPage()),
               );
             },
           ),
@@ -64,7 +66,13 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _pages()[_selectedIndex],
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(child: _pages()[_selectedIndex]),
+          const MiniPlayer(),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         elevation: 8.0,
