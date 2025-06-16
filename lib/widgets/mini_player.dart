@@ -10,30 +10,29 @@ class MiniPlayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AudioPlayerService>(
       builder: (context, audioService, child) {
-        // Only show when a song is loaded
-        if (audioService.currentTitle == null) {
-          return const SizedBox.shrink();
-        }
+        // Always render the mini player, show inactive UI if no song
+        final isActive = audioService.currentTitle != null;
 
         return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const FullScreenPlayer(),
-              ),
-            );
-          },
+          onTap: isActive
+              ? () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FullScreenPlayer(),
+                    ),
+                  );
+                }
+              : null,
           child: Container(
             height: 70,
-            color: Colors.grey[900],
+            color: Colors.grey[500],
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                // Album Art
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: audioService.currentImageUrl != null
+                  child: isActive && audioService.currentImageUrl != null
                       ? Image.network(
                           audioService.currentImageUrl!,
                           width: 50,
@@ -54,17 +53,15 @@ class MiniPlayer extends StatelessWidget {
                         ),
                 ),
                 const SizedBox(width: 12),
-                
-                // Song Info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        audioService.currentTitle ?? '',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        isActive ? audioService.currentTitle! : 'No song playing',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(isActive ? 1 : 0.5),
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                         ),
@@ -72,9 +69,9 @@ class MiniPlayer extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        audioService.currentArtist ?? '',
-                        style: const TextStyle(
-                          color: Colors.white70,
+                        isActive ? audioService.currentArtist ?? '' : 'Select a song to play',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(isActive ? 1 : 0.5),
                           fontSize: 12,
                         ),
                         maxLines: 1,
@@ -83,23 +80,21 @@ class MiniPlayer extends StatelessWidget {
                     ],
                   ),
                 ),
-                
-                // Play/Pause Button
                 IconButton(
-                  onPressed: audioService.togglePlayPause,
+                  onPressed: isActive ? audioService.togglePlayPause : null,
                   icon: Icon(
-                    audioService.isPlaying ? Icons.pause : Icons.play_arrow,
-                    color: Colors.white,
+                    isActive
+                        ? (audioService.isPlaying ? Icons.pause : Icons.play_arrow)
+                        : Icons.play_arrow,
+                    color: Colors.white.withOpacity(isActive ? 1 : 0.5),
                     size: 28,
                   ),
                 ),
-                
-                // Next Button
                 IconButton(
-                  onPressed: audioService.hasNext ? audioService.nextSong : null,
+                  onPressed: isActive && audioService.hasNext ? audioService.nextSong : null,
                   icon: Icon(
                     Icons.skip_next,
-                    color: audioService.hasNext ? Colors.white : Colors.grey[600],
+                    color: isActive && audioService.hasNext ? Colors.white : Colors.grey[600],
                     size: 24,
                   ),
                 ),
