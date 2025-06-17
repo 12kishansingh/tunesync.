@@ -12,7 +12,7 @@ final String text;
       child: Container(
         padding: EdgeInsets.all(25),
         margin: EdgeInsets.symmetric(horizontal: 25),
-          decoration: BoxDecoration(color: const Color.fromARGB(255, 90, 33, 182),
+          decoration: BoxDecoration(color:Color.fromARGB(255,0,194,168),
           borderRadius: BorderRadius.circular(8)),
         child: Center(
       

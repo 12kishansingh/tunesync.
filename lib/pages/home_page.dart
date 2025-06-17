@@ -2,7 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:tunesync/pages/Home/artist_page.dart';
 import 'package:tunesync/pages/Home/h1.dart';
+import 'package:tunesync/pages/profle_info.dart';
+import 'package:tunesync/pages/search_and_play.dart';
 
+import 'package:tunesync/widgets/mini_player.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,18 +18,15 @@ class _HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser!;
   int _selectedIndex = 0;
 
-  // Sign out method
   void signUserOut() {
     FirebaseAuth.instance.signOut();
   }
 
-  // Content pages for each nav item
   static List<Widget> _pages() => const [
         HomePage1(),
         Center(child: Text("Connect Page")),
         Center(child: Text("Library Page")),
-       ArtistsPage(),
-
+        ArtistsPage(),
       ];
 
   void _onItemTapped(int index) {
@@ -42,36 +42,55 @@ class _HomePageState extends State<HomePage> {
         title: const Text("TuneSync",
             style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Search tapped')),
-              );
-            },
+          Tooltip(
+            message: 'Search',
+            child: IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                // Navigate to SearchAndPlayPage instead of showing SnackBar
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const SearchAndPlayPage()),
+                );
+              },
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Profile info")),
-              );
-            },
+          Tooltip(
+            message: 'Profile info',
+            child: IconButton(
+              icon: const Icon(Icons.account_circle),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context)=>const ProfilePage()),
+                );
+              },
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: signUserOut,
+          Tooltip(
+            message: 'Sign Out',
+            child: IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: signUserOut,
+            ),
           ),
         ],
       ),
-      body: _pages()[_selectedIndex],
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(child: _pages()[_selectedIndex]),
+          const MiniPlayer(),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         elevation: 8.0,
-        backgroundColor: Colors.purple,
+        backgroundColor: const Color.fromARGB(255, 0, 194, 168),
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.teal,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.white,
         onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(
