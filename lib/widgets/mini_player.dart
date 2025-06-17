@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tunesync/services/audio_player.dart';// Correct import
+import 'package:tunesync/services/audio_player.dart'; // Correct import
 import 'package:tunesync/pages/full_screen_page.dart';
 
 class MiniPlayer extends StatelessWidget {
@@ -26,8 +26,18 @@ class MiniPlayer extends StatelessWidget {
               : null,
           child: Container(
             height: 70,
-            color: Colors.grey[500],
+            // color: Colors.white70,//
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white70,
+              border: Border(
+                top: BorderSide(
+                  color: Colors.black.withOpacity(0.12), // Light black border
+                  width: 1.5,
+                ),
+              ),
+              borderRadius: BorderRadius.circular(12), // Optional
+            ),
             child: Row(
               children: [
                 ClipRRect(
@@ -38,18 +48,21 @@ class MiniPlayer extends StatelessWidget {
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
                             width: 50,
                             height: 50,
                             color: Colors.grey[600],
-                            child: const Icon(Icons.music_note, color: Colors.white),
+                            child: const Icon(Icons.music_note,
+                                color: Colors.white),
                           ),
                         )
                       : Container(
                           width: 50,
                           height: 50,
                           color: Colors.grey[600],
-                          child: const Icon(Icons.music_note, color: Colors.white),
+                          child:
+                              const Icon(Icons.music_note, color: Colors.white),
                         ),
                 ),
                 const SizedBox(width: 12),
@@ -59,9 +72,11 @@ class MiniPlayer extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        isActive ? audioService.currentTitle! : 'No song playing',
+                        isActive
+                            ? audioService.currentTitle!
+                            : 'No song playing',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(isActive ? 1 : 0.5),
+                          color: Colors.black,
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                         ),
@@ -69,9 +84,11 @@ class MiniPlayer extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        isActive ? audioService.currentArtist ?? '' : 'Select a song to play',
+                        isActive
+                            ? audioService.currentArtist ?? ''
+                            : 'Select a song to play',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(isActive ? 1 : 0.5),
+                          color: Colors.black,
                           fontSize: 12,
                         ),
                         maxLines: 1,
@@ -84,17 +101,23 @@ class MiniPlayer extends StatelessWidget {
                   onPressed: isActive ? audioService.togglePlayPause : null,
                   icon: Icon(
                     isActive
-                        ? (audioService.isPlaying ? Icons.pause : Icons.play_arrow)
+                        ? (audioService.isPlaying
+                            ? Icons.pause
+                            : Icons.play_arrow)
                         : Icons.play_arrow,
-                    color: Colors.white.withOpacity(isActive ? 1 : 0.5),
+                    color: Colors.black.withOpacity(isActive ? 1 : 0.5),
                     size: 28,
                   ),
                 ),
                 IconButton(
-                  onPressed: isActive && audioService.hasNext ? audioService.nextSong : null,
+                  onPressed: isActive && audioService.hasNext
+                      ? audioService.nextSong
+                      : null,
                   icon: Icon(
                     Icons.skip_next,
-                    color: isActive && audioService.hasNext ? Colors.white : Colors.grey[600],
+                    color: isActive && audioService.hasNext
+                        ? Colors.white
+                        : Colors.grey[600],
                     size: 24,
                   ),
                 ),
