@@ -4,6 +4,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
+  // Helper to get a user-friendly name from email if displayName is null
+  String getUserName(User? user) {
+    if (user == null) return 'User Name';
+    if (user.displayName != null && user.displayName!.trim().isNotEmpty) {
+      return user.displayName!;
+    }
+    if (user.email != null && user.email!.contains('@')) {
+      final namePart = user.email!.split('@')[0];
+      // Capitalize first letter for a cleaner look
+      return namePart.isNotEmpty
+          ? namePart[0].toUpperCase() + namePart.substring(1)
+          : 'User Name';
+    }
+    return 'User Name';
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -32,7 +48,7 @@ class ProfilePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user?.displayName ?? 'User Name',
+                      getUserName(user),
                       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     Text(

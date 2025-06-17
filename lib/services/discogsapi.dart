@@ -6,6 +6,19 @@ class DiscogsAPI {
   static const String consumerKey = 'FnKdhVcWvNVrOsTbjLGU';
   static const String consumerSecret = 'fpnIISOgDWdnwFXZOhdaqnMczSrezimM';
 
+  static Future<List<dynamic>> searchTracks(String query) async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/database/search?q=$query&type=track&key=$consumerKey&secret=$consumerSecret'),
+      headers: {'User-Agent': 'TuneSync/1.0'},
+    );
+    if (response.statusCode == 200) {
+      return json.decode(response.body)['results'];
+    } else {
+      throw Exception('Failed to load results');
+    }
+  }
+
   // Existing methods
   static Future<Map<String, dynamic>?> searchGenre(String genre) async {
     final url = Uri.parse(
@@ -87,7 +100,7 @@ class DiscogsAPI {
         '$baseUrl/database/search?track=$title&type=release&key=$consumerKey&secret=$consumerSecret',
       );
       final response = await http.get(url);
-      
+
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
