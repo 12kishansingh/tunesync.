@@ -34,6 +34,29 @@ class FullScreenPlayer extends StatelessWidget {
       ),
       body: Consumer<AudioPlayerService>(
         builder: (context, audioService, child) {
+          final isActive = audioService.currentTitle != null;
+          if (!isActive) {
+            // Show "No song playing" message
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.music_note, size: 80, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
+                    'No song is playing',
+                    style: TextStyle(fontSize: 20, color: Colors.grey),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Select a song to play',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                ],
+              ),
+            );
+          }
+          // Show song details and controls
           return Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
@@ -65,7 +88,7 @@ class FullScreenPlayer extends StatelessWidget {
                 const SizedBox(height: 40),
                 // Song Title and Artist
                 Text(
-                  audioService.currentTitle ?? 'Unknown Song', // FIXED getter
+                  audioService.currentTitle ?? 'Unknown Song',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -75,7 +98,7 @@ class FullScreenPlayer extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  audioService.currentArtist ?? 'Unknown Artist', // FIXED getter
+                  audioService.currentArtist ?? 'Unknown Artist',
                   style: TextStyle(
                     color: Colors.grey[400],
                     fontSize: 16,

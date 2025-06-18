@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
-import 'package:tunesync/services/audio_player_service.dart';
+import 'package:tunesync/services/audio_player.dart';
 
 class BottomPlayerControls extends StatelessWidget {
   const BottomPlayerControls({Key? key}) : super(key: key);
@@ -11,9 +11,9 @@ class BottomPlayerControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final audioService = Provider.of<AudioPlayerService>(context);
     final isPlaying = audioService.isPlaying;
-    final currentTrack = audioService.currentTrackTitle;
+    final currentTrack = audioService.currentTitle; // Updated
     final artist = audioService.currentArtist;
-    final coverImage = audioService.coverImageUrl;
+    final coverImage = audioService.currentImageUrl; // Updated
 
     if (currentTrack == null) return const SizedBox();
 
@@ -21,7 +21,7 @@ class BottomPlayerControls extends StatelessWidget {
       height: 80,
       decoration: BoxDecoration(
         color: Colors.grey[900],
-        border: Border(top: BorderSide(color: Colors.white24)),
+        border: const Border(top: BorderSide(color: Colors.white24)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -82,11 +82,11 @@ class BottomPlayerControls extends StatelessWidget {
 
             // Player Controls
             StreamBuilder<Duration>(
-              stream: audioService.player.positionStream,
+              stream: audioService.audioPlayer.positionStream, // Updated
               builder: (context, snapshot) {
                 final position = snapshot.data ?? Duration.zero;
                 return StreamBuilder<Duration?>(
-                  stream: audioService.player.durationStream,
+                  stream: audioService.audioPlayer.durationStream, // Updated
                   builder: (context, durationSnapshot) {
                     final duration = durationSnapshot.data ?? Duration.zero;
                     return Row(
@@ -97,10 +97,9 @@ class BottomPlayerControls extends StatelessWidget {
                           child: Slider(
                             min: 0,
                             max: duration.inSeconds.toDouble(),
-                            value: position.inSeconds.toDouble(),
+                            value: position.inSeconds.clamp(0, duration.inSeconds).toDouble(),
                             onChanged: (value) {
-                              audioService
-                                  .seek(Duration(seconds: value.toInt()));
+                              audioService.seek(Duration(seconds: value.toInt()));
                             },
                             activeColor: Colors.teal,
                             inactiveColor: Colors.grey[700],
@@ -122,7 +121,7 @@ class BottomPlayerControls extends StatelessWidget {
                             color: Colors.white,
                             size: 32,
                           ),
-                          onPressed: audioService.togglePlayback,
+                          onPressed: audioService.togglePlayPause, // Updated
                         ),
                       ],
                     );
