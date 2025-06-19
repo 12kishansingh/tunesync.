@@ -3,6 +3,22 @@ import 'package:provider/provider.dart';
 import 'package:tunesync/services/audio_player.dart';
 import 'package:tunesync/services/youtube_music_service.dart';
 import 'package:tunesync/services/discogsapi.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+
+// Track model to unify song data
+class Track {
+  final String id;
+  final String title;
+  final String artist;
+  final String coverUrl;
+
+  Track({
+    required this.id,
+    required this.title,
+    required this.artist,
+    required this.coverUrl,
+  });
+}
 
 class SearchAndPlayPage extends StatefulWidget {
   const SearchAndPlayPage({super.key});
@@ -13,7 +29,7 @@ class SearchAndPlayPage extends StatefulWidget {
 
 class _SearchAndPlayPageState extends State<SearchAndPlayPage> {
   final TextEditingController _controller = TextEditingController();
-  List<Map<String, String>> _results = [];
+  List<Track> _results = [];
   bool _loading = false;
   String? _errorMessage;
 
@@ -31,14 +47,62 @@ class _SearchAndPlayPageState extends State<SearchAndPlayPage> {
       _loading = true;
       _errorMessage = null;
     });
-    final results = await YouTubeMusicService.searchSongs(query);
-    setState(() {
-      _results = results;
-      _loading = false;
-      if (_results.isEmpty) {
-        _errorMessage = 'No results found for "$query"';
-      }
-    });
+
+    try {
+      final videos = await YouTubeMusicService.searchSongs(query);
+
+      // Convert YouTube results to Track objects with Discogs enrichment
+      final tracks = await Future.wait(videos.map((video) async {
+        final discogs = await DiscogsAPI.searchTrack(video.title);
+        String artist = '';
+        String coverUrl = video.thumbnails.mediumResUrl;
+
+        if (discogs != null &&
+            discogs['results'] != null &&
+            discogs['results'].isNotEmpty) {
+          artist = discogs['results'][0]['artist'] ?? '';
+          coverUrl = discogs['results'][0]['cover_image'] ?? coverUrl;
+        }
+
+        return Track(
+          id: video.id.value,
+          title: video.title,
+          artist: artist,
+          coverUrl: coverUrl,
+        );
+      }));
+
+      setState(() {
+        _results = tracks;
+        _loading = false;
+        if (_results.isEmpty) {
+          _errorMessage = 'No results found for "$query"';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _errorMessage = 'Search failed: ${e.toString()}';
+      });
+    }
+  }
+
+  void onTrackSelected(Track track) async {
+    final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+    final url = await YouTubeMusicService.getAudioUrl(track.id);
+
+    if (url.isNotEmpty) {
+      await audioService.playDirect(
+        url,
+        title: track.title,
+        artist: track.artist,
+        imageUrl: track.coverUrl,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Audio stream not available')),
+      );
+    }
   }
 
   @override
@@ -94,34 +158,17 @@ class _SearchAndPlayPageState extends State<SearchAndPlayPage> {
                 return ListView.builder(
                   itemCount: _results.length,
                   itemBuilder: (context, index) {
-                    final song = _results[index];
+                    final track = _results[index];
                     return ListTile(
                       leading: Image.network(
-                        song['thumbnail'] ?? '',
+                        track.coverUrl,
                         width: 50,
                         height: 50,
                         errorBuilder: (_, __, ___) => const Icon(Icons.music_note),
                       ),
-                      title: Text(song['title'] ?? ''),
-                      subtitle: Text(song['artist'] ?? ''),
-                      onTap: () async {
-                        final discogs = await DiscogsAPI.searchTrack(song['title'] ?? '');
-                        String? discogsImage;
-                        if (discogs != null &&
-                            discogs['results'] != null &&
-                            (discogs['results'] as List).isNotEmpty) {
-                          discogsImage = discogs['results'][0]['cover_image'];
-                        }
-                        final url = await YouTubeMusicService.getAudioUrl(song['id']!);
-                        if (url != null) {
-                          await audioService.playDirect(
-                            url,
-                            title: song['title'],
-                            artist: song['artist'],
-                            imageUrl: discogsImage ?? song['thumbnail'],
-                          );
-                        }
-                      },
+                      title: Text(track.title),
+                      subtitle: Text(track.artist),
+                      onTap: () => onTrackSelected(track),
                     );
                   },
                 );

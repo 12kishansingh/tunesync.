@@ -8,7 +8,7 @@ class FullScreenPlayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color.fromARGB(179, 98, 95, 95),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -41,16 +41,16 @@ class FullScreenPlayer extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
-                  Icon(Icons.music_note, size: 80, color: Colors.grey),
+                  Icon(Icons.music_note, size: 80, color: Colors.white),
                   SizedBox(height: 16),
                   Text(
                     'No song is playing',
-                    style: TextStyle(fontSize: 20, color: Colors.grey),
+                    style: TextStyle(fontSize: 20, color: Colors.white),
                   ),
                   SizedBox(height: 8),
                   Text(
                     'Select a song to play',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ],
               ),
