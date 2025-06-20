@@ -110,7 +110,7 @@ class _SearchAndPlayPageState extends State<SearchAndPlayPage> {
     final audioService = Provider.of<AudioPlayerService>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('YouTube Music + Discogs')),
+      appBar: AppBar(title: const Text('youtube+discogs Search')),
       body: Column(
         children: [
           Padding(
@@ -121,7 +121,7 @@ class _SearchAndPlayPageState extends State<SearchAndPlayPage> {
                   child: TextField(
                     controller: _controller,
                     decoration: const InputDecoration(
-                      hintText: 'Search for a song...',
+                      hintText: 'Search for a songs,artists...',
                     ),
                     onSubmitted: (_) => _search(),
                   ),
