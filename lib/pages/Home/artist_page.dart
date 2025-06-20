@@ -26,56 +26,61 @@ class _ArtistsPageState extends State<ArtistsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _controller,
-                  decoration: const InputDecoration(
-                    labelText: 'Search Artist',
-                    border: OutlineInputBorder(),
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      labelText: 'Search Artist',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: _search,
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: _results.isEmpty
-              ? const Center(child: Text('No results'))
-              : ListView.builder(
-                  itemCount: _results.length,
-                  itemBuilder: (context, index) {
-                    final artist = _results[index];
-                    return ListTile(
-                      title: Text(artist['title'] ?? 'Unknown Artist'),
-                      subtitle: Text('ID: ${artist['id']}'),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ArtistReleasesPage(
-                              artistId: artist['id'],
-                              artistName: artist['title'] ?? '',
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: _search,
                 ),
-        ),
-      ],
+              ],
+            ),
+          ),
+          Expanded(
+            child: _results.isEmpty
+                ? const Center(child: Text('No results'))
+                : ListView.builder(
+                    itemCount: _results.length,
+                    itemBuilder: (context, index) {
+                      final artist = _results[index];
+                      return ListTile(
+                        title: Text(artist['title'] ?? 'Unknown Artist'),
+                        subtitle: Text('ID: ${artist['id']}'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ArtistReleasesPage(
+                                artistId: artist['id'],
+                                artistName: artist['title'] ?? '',
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+      // No bottomNavigationBar here!
     );
   }
 }
