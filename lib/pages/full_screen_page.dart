@@ -12,6 +12,12 @@ class FullScreenPlayer extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         title: const Text(
           'NOW PLAYING',
           style: TextStyle(
@@ -21,10 +27,6 @@ class FullScreenPlayer extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -95,6 +97,8 @@ class FullScreenPlayer extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -104,6 +108,8 @@ class FullScreenPlayer extends StatelessWidget {
                     fontSize: 16,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 40),
                 // Progress Bar with StreamBuilder
@@ -159,14 +165,31 @@ class FullScreenPlayer extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
+                    // Shuffle Button
                     IconButton(
-                      onPressed: audioService.hasPrevious ? audioService.previousSong : null,
+                      onPressed: audioService.toggleShuffle,
                       icon: Icon(
-                        Icons.skip_previous,
-                        color: audioService.hasPrevious ? Colors.white : Colors.grey[600],
+                        Icons.shuffle,
+                        color: audioService.shuffleModeEnabled 
+                            ? Colors.teal 
+                            : Colors.white,
                         size: 40,
                       ),
                     ),
+                    // Previous Button
+                    IconButton(
+                      onPressed: audioService.hasPrevious 
+                          ? audioService.previousSong 
+                          : null,
+                      icon: Icon(
+                        Icons.skip_previous,
+                        color: audioService.hasPrevious 
+                            ? Colors.white 
+                            : Colors.grey[600],
+                        size: 40,
+                      ),
+                    ),
+                    // Play/Pause Button
                     Container(
                       decoration: const BoxDecoration(
                         color: Colors.white,
@@ -175,17 +198,35 @@ class FullScreenPlayer extends StatelessWidget {
                       child: IconButton(
                         onPressed: audioService.togglePlayPause,
                         icon: Icon(
-                          audioService.isPlaying ? Icons.pause : Icons.play_arrow,
+                          audioService.isPlaying 
+                              ? Icons.pause 
+                              : Icons.play_arrow,
                           color: Colors.black,
                           size: 40,
                         ),
                       ),
                     ),
+                    // Next Button
                     IconButton(
-                      onPressed: audioService.hasNext ? audioService.nextSong : null,
+                      onPressed: audioService.hasNext 
+                          ? audioService.nextSong 
+                          : null,
                       icon: Icon(
                         Icons.skip_next,
-                        color: audioService.hasNext ? Colors.white : Colors.grey[600],
+                        color: audioService.hasNext 
+                            ? Colors.white 
+                            : Colors.grey[600],
+                        size: 40,
+                      ),
+                    ),
+                    // Loop Button
+                    IconButton(
+                      onPressed: audioService.toggleLoop,
+                      icon: Icon(
+                        Icons.loop,
+                        color: audioService.loopOneEnabled 
+                            ? Colors.teal 
+                            : Colors.white,
                         size: 40,
                       ),
                     ),

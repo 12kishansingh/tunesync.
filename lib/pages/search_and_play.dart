@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunesync/model/track.dart';
+import 'package:tunesync/pages/full_screen_page.dart';
 import 'package:tunesync/services/audio_player.dart';
 import 'package:tunesync/services/discogsapi.dart';
 import 'package:tunesync/services/youtube_music_service.dart';
@@ -26,6 +27,13 @@ class _SearchAndPlayPageState extends State<SearchAndPlayPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_searchFocusNode);
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
   }
 
   Future<void> _search() async {
@@ -85,6 +93,28 @@ class _SearchAndPlayPageState extends State<SearchAndPlayPage> {
   void onTrackSelected(int index) async {
     final audioService = Provider.of<AudioPlayerService>(context, listen: false);
     await audioService.playPlaylist(_results, index);
+    
+    // Use pushReplacement to dispose current screen and show full screen player
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const FullScreenPlayer(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+          
+          var tween = Tween(begin: begin, end: end).chain(
+            CurveTween(curve: curve),
+          );
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
   }
 
   @override

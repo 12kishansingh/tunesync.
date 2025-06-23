@@ -1,6 +1,7 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:tunesync/model/track.dart';// Import Track model
+import 'package:tunesync/model/track.dart';
 import 'package:tunesync/services/youtube_music_service.dart';
 
 class AudioPlayerService extends ChangeNotifier {
@@ -8,51 +9,54 @@ class AudioPlayerService extends ChangeNotifier {
   List<Track> _playlist = [];
   int _currentIndex = -1;
   String? _currentImageUrl;
+  final Random _random = Random();
+  bool _loopOneEnabled = false;
+  bool _shuffleModeEnabled = false;
 
-  // Current state for backwards compatibility
-  Duration _duration = Duration.zero;
-  Duration _position = Duration.zero;
-
-  // Streams for UI consumption
+  // Streams
   Stream<Duration> get positionStream => _audioPlayer.positionStream;
   Stream<Duration?> get durationStream => _audioPlayer.durationStream;
   Stream<PlayerState> get playerStateStream => _audioPlayer.playerStateStream;
   Stream<bool> get isPlayingStream => 
       _audioPlayer.playerStateStream.map((state) => state.playing).distinct();
 
-  // Getters for backwards compatibility
+  // Getters
   AudioPlayer get audioPlayer => _audioPlayer;
   String? get currentTitle => _currentIndex >= 0 ? _playlist[_currentIndex].title : null;
   String? get currentArtist => _currentIndex >= 0 ? _playlist[_currentIndex].artist : null;
-  String? get currentImageUrl => _currentImageUrl;
+  String? get currentImageUrl=> _currentImageUrl;
   bool get isPlaying => _audioPlayer.playing;
-  bool get hasNext => _currentIndex < _playlist.length - 1;
-  bool get hasPrevious => _currentIndex > 0;
-  Duration get duration => _duration;
-  Duration get position => _position;
+  bool get hasNext => _playlist.isNotEmpty;
+  bool get hasPrevious => _playlist.isNotEmpty;
+  bool get loopOneEnabled => _loopOneEnabled;
+  bool get shuffleModeEnabled => _shuffleModeEnabled;
 
   AudioPlayerService() {
-    // Handle track completion
     _audioPlayer.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
-        nextSong();
+        if (_loopOneEnabled) {
+          _replayCurrent();
+        } else {
+          nextSong();
+        }
       }
-      notifyListeners();
-    });
-
-    // Update duration and position for backwards compatibility
-    _audioPlayer.durationStream.listen((d) {
-      _duration = d ?? Duration.zero;
-      notifyListeners();
-    });
-
-    _audioPlayer.positionStream.listen((p) {
-      _position = p;
       notifyListeners();
     });
   }
 
-  // Play single track directly (backwards compatibility)
+  // Toggle loop mode
+  void toggleLoop() {
+    _loopOneEnabled = !_loopOneEnabled;
+    notifyListeners();
+  }
+
+  // Toggle shuffle mode
+  void toggleShuffle() {
+    _shuffleModeEnabled = !_shuffleModeEnabled;
+    notifyListeners();
+  }
+
+  // Play single track
   Future<void> playDirect(String url, {String? title, String? artist, String? imageUrl}) async {
     try {
       _playlist = [Track(
@@ -72,48 +76,14 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
-  // Play song with playlist context (backwards compatibility)
-  Future<void> playSong(Map<String, String> song, {List<Map<String, String>>? playlist, int index = 0}) async {
-    try {
-      if (playlist != null) {
-        // Convert old format to new Track format
-        _playlist = playlist.map((item) => Track(
-          id: item['audioUrl'] ?? 'unknown',
-          title: item['title'] ?? 'Unknown',
-          artist: item['artist'] ?? 'Unknown',
-          coverUrl: item['imageUrl'] ?? '',
-        )).toList();
-        _currentIndex = index;
-      } else {
-        _playlist = [Track(
-          id: song['audioUrl'] ?? 'unknown',
-          title: song['title'] ?? 'Unknown',
-          artist: song['artist'] ?? 'Unknown',
-          coverUrl: song['imageUrl'] ?? '',
-        )];
-        _currentIndex = 0;
-      }
-
-      _currentImageUrl = _playlist[_currentIndex].coverUrl;
-
-      if (song['audioUrl'] != null) {
-        await _audioPlayer.setUrl(song['audioUrl']!);
-        await _audioPlayer.play();
-      }
-      notifyListeners();
-    } catch (e) {
-      print('Error playing song: $e');
-    }
-  }
-
-  // Play a playlist starting at specific index
+  // Play playlist
   Future<void> playPlaylist(List<Track> playlist, int startIndex) async {
     try {
       _playlist = playlist;
       _currentIndex = startIndex;
       await _playTrack(_playlist[_currentIndex]);
     } catch (e) {
-      print("Error playing playlist: $e");
+      print("Error playing playlist:");
     }
   }
 
@@ -129,21 +99,48 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
-  // Playback controls
-  Future<void> nextSong() async {
-    if (hasNext) {
-      _currentIndex++;
+  Future<void> _replayCurrent() async {
+    if (_currentIndex >= 0) {
       await _playTrack(_playlist[_currentIndex]);
     }
   }
 
-  Future<void> previousSong() async {
-    if (hasPrevious) {
-      _currentIndex--;
-      await _playTrack(_playlist[_currentIndex]);
+  // Play next song
+  Future<void> nextSong() async {
+    if (_playlist.isEmpty) return;
+    
+    int newIndex;
+    if (_shuffleModeEnabled) {
+      // Shuffle mode: pick a random song
+      do {
+        newIndex = _random.nextInt(_playlist.length);
+      } while (newIndex == _currentIndex && _playlist.length > 1);
     } else {
-      await seek(Duration.zero);
+      // Sequential mode: play next in order
+      newIndex = (_currentIndex + 1) % _playlist.length;
     }
+    
+    _currentIndex = newIndex;
+    await _playTrack(_playlist[_currentIndex]);
+  }
+
+  // Play previous song
+  Future<void> previousSong() async {
+    if (_playlist.isEmpty) return;
+    
+    int newIndex;
+    if (_shuffleModeEnabled) {
+      // Shuffle mode: pick a random song
+      do {
+        newIndex = _random.nextInt(_playlist.length);
+      } while (newIndex == _currentIndex && _playlist.length > 1);
+    } else {
+      // Sequential mode: play previous in order
+      newIndex = (_currentIndex - 1 + _playlist.length) % _playlist.length;
+    }
+    
+    _currentIndex = newIndex;
+    await _playTrack(_playlist[_currentIndex]);
   }
 
   Future<void> togglePlayPause() async {
@@ -159,7 +156,6 @@ class AudioPlayerService extends ChangeNotifier {
   Future<void> pause() async => await _audioPlayer.pause();
   Future<void> seek(Duration position) async => await _audioPlayer.seek(position);
 
-  // Helper for formatting duration
   String formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
     return "${twoDigits(duration.inMinutes)}:${twoDigits(duration.inSeconds.remainder(60))}";

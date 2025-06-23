@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tunesync/model/track.dart';
 import 'package:tunesync/services/audio_player.dart';
 import 'package:tunesync/services/discogsapi.dart';
 import 'package:provider/provider.dart';
@@ -58,26 +59,18 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
             onTap: () {
               final audioService = Provider.of<AudioPlayerService>(context, listen: false);
               
-              // Create song object with explicit String type casting
-              final Map<String, String> song = {
-                'title': item['title']?.toString() ?? 'Unknown Song',
-                'artist': item['type']?.toString() ?? 'Unknown Artist',
-                'imageUrl': item['cover_image']?.toString() ?? '',
-                'audioUrl': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-              };
+              // Convert dynamic tracks to Track objects
+              final trackList = _tracks.map<Track>((track) {
+                return Track(
+                  id: track['id']?.toString() ?? 'unknown_${DateTime.now().millisecondsSinceEpoch}',
+                  title: track['title']?.toString() ?? 'Unknown Song',
+                  artist: track['type']?.toString() ?? 'Unknown Artist',
+                  coverUrl: track['cover_image']?.toString() ?? '',
+                );
+              }).toList();
 
-              // Create playlist for navigation
-              final playlist = _tracks
-                  .map<Map<String, String>>((track) => {
-                        'title': track['title']?.toString() ?? 'Unknown Song',
-                        'artist': track['type']?.toString() ?? 'Unknown Artist',
-                        'imageUrl': track['cover_image']?.toString() ?? '',
-                        'audioUrl': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-                      })
-                  .toList();
-
-              // Play the selected song with playlist context
-              audioService.playSong(song, playlist: playlist, index: index);
+              // Play the selected track with playlist context
+              audioService.playPlaylist(trackList, index);
             },
           );
         },
