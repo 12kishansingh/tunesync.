@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tunesync/services/audio_player.dart'; // Correct import
+import 'package:tunesync/services/audio_player.dart';
 import 'package:tunesync/pages/full_screen_page.dart';
 
 class MiniPlayer extends StatelessWidget {
@@ -39,8 +39,7 @@ class MiniPlayer extends StatelessWidget {
                 },
                 child: Container(
                   height: 70,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white70,
                     border: Border(
@@ -129,7 +128,7 @@ class MiniPlayer extends StatelessWidget {
                         icon: Icon(
                           Icons.skip_next,
                           color: isActive && audioService.hasNext
-                              ? Colors.white
+                              ? Colors.black
                               : Colors.grey[600],
                           size: 24,
                         ),
@@ -144,7 +143,7 @@ class MiniPlayer extends StatelessWidget {
               value: progress.clamp(0.0, 1.0),
               minHeight: 3,
               backgroundColor: Colors.grey[300],
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.teal),
             ),
           ],
         );

@@ -1,23 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tunesync/model/track.dart';
 import 'package:tunesync/services/audio_player.dart';
-import 'package:tunesync/services/youtube_music_service.dart';
 import 'package:tunesync/services/discogsapi.dart';
+import 'package:tunesync/services/youtube_music_service.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
-
-class Track {
-  final String id;
-  final String title;
-  final String artist;
-  final String coverUrl;
-
-  Track({
-    required this.id,
-    required this.title,
-    required this.artist,
-    required this.coverUrl,
-  });
-}
 
 class SearchAndPlayPage extends StatefulWidget {
   const SearchAndPlayPage({super.key});
@@ -95,28 +82,13 @@ class _SearchAndPlayPageState extends State<SearchAndPlayPage> {
     }
   }
 
-  void onTrackSelected(Track track) async {
+  void onTrackSelected(int index) async {
     final audioService = Provider.of<AudioPlayerService>(context, listen: false);
-    final url = await YouTubeMusicService.getAudioUrl(track.id);
-
-    if (url.isNotEmpty) {
-      await audioService.playDirect(
-        url,
-        title: track.title,
-        artist: track.artist,
-        imageUrl: track.coverUrl,
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Audio stream not available')),
-      );
-    }
+    await audioService.playPlaylist(_results, index);
   }
 
   @override
   Widget build(BuildContext context) {
-    final audioService = Provider.of<AudioPlayerService>(context);
-
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(
@@ -128,9 +100,7 @@ class _SearchAndPlayPageState extends State<SearchAndPlayPage> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
+                    onPressed: () => Navigator.pop(context),
                   ),
                   Expanded(
                     child: TextField(
@@ -143,14 +113,12 @@ class _SearchAndPlayPageState extends State<SearchAndPlayPage> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                        // Removed suffixIcon from here
                       ),
                       textInputAction: TextInputAction.search,
                       onSubmitted: (_) => _search(),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // Search icon outside the TextField
                   IconButton(
                     icon: const Icon(Icons.search),
                     onPressed: _search,
@@ -193,73 +161,13 @@ class _SearchAndPlayPageState extends State<SearchAndPlayPage> {
                         ),
                         title: Text(track.title),
                         subtitle: Text(track.artist),
-                        onTap: () => onTrackSelected(track),
+                        onTap: () => onTrackSelected(index),
                       );
                     },
                   );
                 },
               ),
             ),
-            if (audioService.currentTitle != null)
-              Container(
-                color: Colors.black87,
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    if (audioService.currentImageUrl != null)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: Image.network(
-                          audioService.currentImageUrl!,
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(
-                            Icons.music_note,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            audioService.currentTitle ?? '',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            audioService.currentArtist ?? '',
-                            style: const TextStyle(color: Colors.white70),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        audioService.isPlaying ? Icons.pause : Icons.play_arrow,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {
-                        if (audioService.isPlaying) {
-                          audioService.pause();
-                        } else {
-                          audioService.play();
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
           ],
         ),
       ),

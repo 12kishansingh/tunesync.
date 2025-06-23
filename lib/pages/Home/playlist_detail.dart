@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tunesync/services/audio_player.dart';
 import 'package:tunesync/services/discogsapi.dart';
-import 'package:provider/provider.dart'; 
+import 'package:provider/provider.dart';
 
 class PlaylistDetailPage extends StatefulWidget {
   final String playlistName;
@@ -56,26 +56,23 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
             subtitle: Text(item['type'] ?? ''),
             trailing: const Icon(Icons.play_arrow),
             onTap: () {
-              final audioService =
-                  Provider.of<AudioPlayerService>(context, listen: false);
-
-              // Create song object with explicit String type casting - FIXED
+              final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+              
+              // Create song object with explicit String type casting
               final Map<String, String> song = {
                 'title': item['title']?.toString() ?? 'Unknown Song',
                 'artist': item['type']?.toString() ?? 'Unknown Artist',
                 'imageUrl': item['cover_image']?.toString() ?? '',
-                'audioUrl':
-                    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+                'audioUrl': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
               };
 
-              // Create playlist for navigation - already correctly typed
+              // Create playlist for navigation
               final playlist = _tracks
                   .map<Map<String, String>>((track) => {
                         'title': track['title']?.toString() ?? 'Unknown Song',
                         'artist': track['type']?.toString() ?? 'Unknown Artist',
                         'imageUrl': track['cover_image']?.toString() ?? '',
-                        'audioUrl':
-                            'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+                        'audioUrl': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
                       })
                   .toList();
 

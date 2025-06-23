@@ -13,7 +13,7 @@ class FullScreenPlayer extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
-          'PLAYLIST',
+          'NOW PLAYING',
           style: TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -35,12 +35,12 @@ class FullScreenPlayer extends StatelessWidget {
       body: Consumer<AudioPlayerService>(
         builder: (context, audioService, child) {
           final isActive = audioService.currentTitle != null;
+
           if (!isActive) {
-            // Show "No song playing" message
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.music_note, size: 80, color: Colors.white),
                   SizedBox(height: 16),
                   Text(
@@ -56,7 +56,7 @@ class FullScreenPlayer extends StatelessWidget {
               ),
             );
           }
-          // Show song details and controls
+
           return Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
@@ -106,38 +106,53 @@ class FullScreenPlayer extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
-                // Progress Bar
-                Column(
-                  children: [
-                    Slider(
-                      activeColor: Colors.white,
-                      inactiveColor: Colors.grey[600],
-                      value: audioService.duration.inSeconds > 0
-                          ? audioService.position.inSeconds.toDouble()
-                          : 0.0,
-                      min: 0.0,
-                      max: audioService.duration.inSeconds.toDouble(),
-                      onChanged: (value) {
-                        audioService.seek(Duration(seconds: value.toInt()));
+                // Progress Bar with StreamBuilder
+                StreamBuilder<Duration>(
+                  stream: audioService.positionStream,
+                  builder: (context, positionSnapshot) {
+                    return StreamBuilder<Duration?>(
+                      stream: audioService.durationStream,
+                      builder: (context, durationSnapshot) {
+                        final position = positionSnapshot.data ?? Duration.zero;
+                        final duration = durationSnapshot.data ?? Duration.zero;
+                        
+                        return Column(
+                          children: [
+                            Slider(
+                              activeColor: Colors.white,
+                              inactiveColor: Colors.grey[600],
+                              value: duration.inSeconds > 0
+                                  ? position.inSeconds.toDouble()
+                                  : 0.0,
+                              min: 0.0,
+                              max: duration.inSeconds.toDouble() > 0
+                                  ? duration.inSeconds.toDouble()
+                                  : 1.0,
+                              onChanged: (value) {
+                                audioService.seek(Duration(seconds: value.toInt()));
+                              },
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    audioService.formatDuration(position),
+                                    style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                                  ),
+                                  Text(
+                                    audioService.formatDuration(duration),
+                                    style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
                       },
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            audioService.formatDuration(audioService.position),
-                            style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                          ),
-                          Text(
-                            audioService.formatDuration(audioService.duration),
-                            style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 40),
                 // Control Buttons

@@ -11,9 +11,9 @@ class BottomPlayerControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final audioService = Provider.of<AudioPlayerService>(context);
     final isPlaying = audioService.isPlaying;
-    final currentTrack = audioService.currentTitle; // Updated
+    final currentTrack = audioService.currentTitle;
     final artist = audioService.currentArtist;
-    final coverImage = audioService.currentImageUrl; // Updated
+    final coverImage = audioService.currentImageUrl;
 
     if (currentTrack == null) return const SizedBox();
 
@@ -36,6 +36,15 @@ class BottomPlayerControls extends StatelessWidget {
                       width: 56,
                       height: 56,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Colors.teal.shade800,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.music_note, color: Colors.white),
+                      ),
                     ),
                   )
                 : Container(
@@ -48,7 +57,6 @@ class BottomPlayerControls extends StatelessWidget {
                     child: const Icon(Icons.music_note, color: Colors.white),
                   ),
             const Gap(16),
-
             // Track Info
             Expanded(
               child: Column(
@@ -79,14 +87,13 @@ class BottomPlayerControls extends StatelessWidget {
               ),
             ),
             const Gap(16),
-
-            // Player Controls
+            // Player Controls with StreamBuilder
             StreamBuilder<Duration>(
-              stream: audioService.audioPlayer.positionStream, // Updated
-              builder: (context, snapshot) {
-                final position = snapshot.data ?? Duration.zero;
+              stream: audioService.positionStream,
+              builder: (context, positionSnapshot) {
+                final position = positionSnapshot.data ?? Duration.zero;
                 return StreamBuilder<Duration?>(
-                  stream: audioService.audioPlayer.durationStream, // Updated
+                  stream: audioService.durationStream,
                   builder: (context, durationSnapshot) {
                     final duration = durationSnapshot.data ?? Duration.zero;
                     return Row(
@@ -96,7 +103,9 @@ class BottomPlayerControls extends StatelessWidget {
                           width: 100,
                           child: Slider(
                             min: 0,
-                            max: duration.inSeconds.toDouble(),
+                            max: duration.inSeconds.toDouble() > 0 
+                                ? duration.inSeconds.toDouble() 
+                                : 1,
                             value: position.inSeconds.clamp(0, duration.inSeconds).toDouble(),
                             onChanged: (value) {
                               audioService.seek(Duration(seconds: value.toInt()));
@@ -106,14 +115,12 @@ class BottomPlayerControls extends StatelessWidget {
                           ),
                         ),
                         const Gap(8),
-
                         // Current Time
                         Text(
                           _formatDuration(position),
                           style: TextStyle(color: Colors.grey[400]),
                         ),
                         const Gap(8),
-
                         // Play/Pause Button
                         IconButton(
                           icon: Icon(
@@ -121,7 +128,7 @@ class BottomPlayerControls extends StatelessWidget {
                             color: Colors.white,
                             size: 32,
                           ),
-                          onPressed: audioService.togglePlayPause, // Updated
+                          onPressed: audioService.togglePlayPause,
                         ),
                       ],
                     );
