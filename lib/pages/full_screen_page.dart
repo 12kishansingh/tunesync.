@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunesync/services/audio_player.dart';
+import 'package:marquee/marquee.dart'; // Added package
 
-class FullScreenPlayer extends StatelessWidget {
+class FullScreenPlayer extends StatefulWidget {
   const FullScreenPlayer({super.key});
 
+  @override
+  State<FullScreenPlayer> createState() => _FullScreenPlayerState();
+}
+
+class _FullScreenPlayerState extends State<FullScreenPlayer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,9 +20,7 @@ class FullScreenPlayer extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'NOW PLAYING',
@@ -37,6 +41,8 @@ class FullScreenPlayer extends StatelessWidget {
       body: Consumer<AudioPlayerService>(
         builder: (context, audioService, child) {
           final isActive = audioService.currentTitle != null;
+          final title = audioService.currentTitle ?? 'Unknown Song';
+          final artist = audioService.currentArtist ?? 'Unknown Artist';
 
           if (!isActive) {
             return const Center(
@@ -88,21 +94,28 @@ class FullScreenPlayer extends StatelessWidget {
                         ),
                 ),
                 const SizedBox(height: 40),
-                // Song Title and Artist
-                Text(
-                  audioService.currentTitle ?? 'Unknown Song',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                // Song Title with Marquee Effect
+                SizedBox(
+                  height: 30,
+                  child: Marquee(
+                    text: title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    velocity: 30.0,
+                    blankSpace: 50.0,
+                    pauseAfterRound: const Duration(seconds: 1),
+                    startPadding: 10.0,
+                    fadingEdgeStartFraction: 0.1,
+                    fadingEdgeEndFraction: 0.1,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 8),
+                // Artist Name
                 Text(
-                  audioService.currentArtist ?? 'Unknown Artist',
+                  artist,
                   style: TextStyle(
                     color: Colors.grey[400],
                     fontSize: 16,
