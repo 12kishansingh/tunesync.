@@ -12,6 +12,7 @@ class AudioPlayerService extends ChangeNotifier {
   final Random _random = Random();
   bool _loopOneEnabled = false;
   bool _shuffleModeEnabled = false;
+  bool _isDisposed = false;
 
   // Streams
   Stream<Duration> get positionStream => _audioPlayer.positionStream;
@@ -24,7 +25,7 @@ class AudioPlayerService extends ChangeNotifier {
   AudioPlayer get audioPlayer => _audioPlayer;
   String? get currentTitle => _currentIndex >= 0 ? _playlist[_currentIndex].title : null;
   String? get currentArtist => _currentIndex >= 0 ? _playlist[_currentIndex].artist : null;
-  String? get currentImageUrl=> _currentImageUrl;
+  String? get currentImageUrl => _currentImageUrl;
   bool get isPlaying => _audioPlayer.playing;
   bool get hasNext => _playlist.isNotEmpty;
   bool get hasPrevious => _playlist.isNotEmpty;
@@ -83,7 +84,7 @@ class AudioPlayerService extends ChangeNotifier {
       _currentIndex = startIndex;
       await _playTrack(_playlist[_currentIndex]);
     } catch (e) {
-      print("Error playing playlist:");
+      print("Error playing playlist: $e");
     }
   }
 
@@ -161,9 +162,17 @@ class AudioPlayerService extends ChangeNotifier {
     return "${twoDigits(duration.inMinutes)}:${twoDigits(duration.inSeconds.remainder(60))}";
   }
 
+  // Add this method to stop and dispose the player
+  Future<void> disposePlayer() async {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    await _audioPlayer.stop();
+    await _audioPlayer.dispose();
+  }
+
   @override
   void dispose() {
-    _audioPlayer.dispose();
+    disposePlayer();
     super.dispose();
   }
 }
