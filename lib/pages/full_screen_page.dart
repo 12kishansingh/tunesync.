@@ -112,7 +112,7 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
                     fadingEdgeEndFraction: 0.1,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 // Artist Name
                 Text(
                   artist,

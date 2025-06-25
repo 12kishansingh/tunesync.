@@ -1,80 +1,193 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tunesync/model/track.dart';
 import 'package:tunesync/services/audio_player.dart';
-import 'package:tunesync/services/discogsapi.dart';
-import 'package:provider/provider.dart';
+import 'package:tunesync/services/youtube_music_service.dart';
 
 class PlaylistDetailPage extends StatefulWidget {
   final String playlistName;
+  final String playlistSubtitle;
+  final String playlistImageUrl;
+  final String genre;
+  final String ytid;
 
-  const PlaylistDetailPage({super.key, required this.playlistName});
+  const PlaylistDetailPage({
+    super.key,
+    required this.playlistName,
+    required this.playlistSubtitle,
+    required this.playlistImageUrl,
+    required this.genre,
+    required this.ytid,
+  });
 
   @override
   State<PlaylistDetailPage> createState() => _PlaylistDetailPageState();
 }
 
 class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
-  List<dynamic> _tracks = [];
+  List<Track> _tracks = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    fetchPlaylistTracks();
+    _fetchTracks();
   }
 
-  Future<void> fetchPlaylistTracks() async {
-    final data = await DiscogsAPI.searchGenre(widget.playlistName);
-    if (data != null && data['results'] != null) {
-      setState(() {
-        _tracks = data['results'];
-      });
+  Future<void> _fetchTracks() async {
+    try {
+      // Use YouTube ID if available, otherwise fallback to genre
+      if (widget.ytid.isNotEmpty) {
+        // This should be a static method!
+        _tracks = await YouTubeMusicService.getPlaylistTracks(widget.ytid);
+      } else {
+        // If you have a DiscogsAPI or other, use it here, also as static
+        // final data = await DiscogsAPI.searchGenre(widget.genre);
+        // _tracks = data['results'].map<Track>((track) => Track.fromJson(track)).toList();
+        _tracks = []; // Or generate a random/dynamic playlist here
+      }
+    } catch (e) {
+      print('Error fetching tracks: $e');
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.playlistName)),
-      body: ListView.builder(
-        itemCount: _tracks.length,
-        itemBuilder: (context, index) {
-          final item = _tracks[index];
-          return ListTile(
-            leading: item['cover_image'] != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: Image.network(
-                      item['cover_image'],
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.music_note),
-                    ),
-                  )
-                : const Icon(Icons.music_note),
-            title: Text(item['title'] ?? 'Unknown Song'),
-            subtitle: Text(item['type'] ?? ''),
-            trailing: const Icon(Icons.play_arrow),
-            onTap: () {
-              final audioService = Provider.of<AudioPlayerService>(context, listen: false);
-              
-              // Convert dynamic tracks to Track objects
-              final trackList = _tracks.map<Track>((track) {
-                return Track(
-                  id: track['id']?.toString() ?? 'unknown_${DateTime.now().millisecondsSinceEpoch}',
-                  title: track['title']?.toString() ?? 'Unknown Song',
-                  artist: track['type']?.toString() ?? 'Unknown Artist',
-                  coverUrl: track['cover_image']?.toString() ?? '',
-                );
-              }).toList();
-
-              // Play the selected track with playlist context
-              audioService.playPlaylist(trackList, index);
-            },
-          );
-        },
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(widget.playlistName, style: const TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Colors.white))
+          : Column(
+              children: [
+                // Playlist image and info
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          widget.playlistImageUrl,
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            width: 100,
+                            height: 100,
+                            color: Colors.grey[800],
+                            child: const Icon(Icons.music_note, color: Colors.white, size: 40),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.playlistName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              widget.playlistSubtitle,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Genre: ${widget.genre}",
+                              style: const TextStyle(
+                                color: Colors.teal,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(color: Colors.grey),
+                // Track list
+                Expanded(
+                  child: _tracks.isEmpty
+                      ? const Center(
+                          child: Text(
+                            "No tracks found.",
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: _tracks.length,
+                          itemBuilder: (context, index) {
+                            final track = _tracks[index];
+                            return ListTile(
+                              leading: track.coverUrl.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: Image.network(
+                                        track.coverUrl,
+                                        width: 50,
+                                        height: 50,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => Container(
+                                          width: 50,
+                                          height: 50,
+                                          color: Colors.grey[800],
+                                          child: const Icon(Icons.music_note, color: Colors.white),
+                                        ),
+                                      ),
+                                    )
+                                  : const Icon(Icons.music_note, color: Colors.white),
+                              title: Text(
+                                track.title,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Text(
+                                track.artist,
+                                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.play_arrow, color: Colors.white),
+                                onPressed: () {
+                                  final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+                                  audioService.playPlaylist(_tracks, index);
+                                },
+                              ),
+                              onTap: () {
+                                final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+                                audioService.playPlaylist(_tracks, index);
+                              },
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }
