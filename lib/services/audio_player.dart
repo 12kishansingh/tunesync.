@@ -77,12 +77,16 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
-  // Play playlist
+  // Play playlist - UPDATED
   Future<void> playPlaylist(List<Track> playlist, int startIndex) async {
     try {
       _playlist = playlist;
       _currentIndex = startIndex;
-      await _playTrack(_playlist[_currentIndex]);
+      notifyListeners();  // Notify immediately to update UI
+      
+      if (startIndex >= 0 && startIndex < playlist.length) {
+        await _playTrack(_playlist[_currentIndex]);
+      }
     } catch (e) {
       print("Error playing playlist: $e");
     }
@@ -162,17 +166,29 @@ class AudioPlayerService extends ChangeNotifier {
     return "${twoDigits(duration.inMinutes)}:${twoDigits(duration.inSeconds.remainder(60))}";
   }
 
-  // Add this method to stop and dispose the player
-  Future<void> disposePlayer() async {
+  // Safe disposal method with error handling
+  Future<void> safeDispose() async {
     if (_isDisposed) return;
-    _isDisposed = true;
-    await _audioPlayer.stop();
-    await _audioPlayer.dispose();
+    try {
+      if (_audioPlayer.playing) {
+        await _audioPlayer.stop();
+      }
+      await _audioPlayer.dispose();
+    } catch (e) {
+      print("Error during safe dispose: $e");
+    } finally {
+      _isDisposed = true;
+    }
+  }
+
+  // Existing disposePlayer now uses safeDispose
+  Future<void> disposePlayer() async {
+    await safeDispose();
   }
 
   @override
   void dispose() {
-    disposePlayer();
+    safeDispose();
     super.dispose();
   }
 }

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunesync/model/track.dart';
 import 'package:tunesync/services/audio_player.dart';
+import 'package:tunesync/pages/full_screen_page.dart';
 import 'package:tunesync/services/youtube_music_service.dart';
+// Import your search page
+import 'package:tunesync/pages/search_and_play.dart'; // <-- Update this import if needed
 
 class PlaylistDetailPage extends StatefulWidget {
   final String playlistName;
@@ -36,21 +39,25 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
 
   Future<void> _fetchTracks() async {
     try {
-      // Use YouTube ID if available, otherwise fallback to genre
       if (widget.ytid.isNotEmpty) {
-        // This should be a static method!
         _tracks = await YouTubeMusicService.getPlaylistTracks(widget.ytid);
       } else {
-        // If you have a DiscogsAPI or other, use it here, also as static
-        // final data = await DiscogsAPI.searchGenre(widget.genre);
-        // _tracks = data['results'].map<Track>((track) => Track.fromJson(track)).toList();
-        _tracks = []; // Or generate a random/dynamic playlist here
+        _tracks = [];
       }
     } catch (e) {
       print('Error fetching tracks: $e');
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  void _playTrack(int index) {
+    final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+    audioService.playPlaylist(_tracks, index);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const FullScreenPlayer()),
+    );
   }
 
   @override
@@ -62,6 +69,17 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
         elevation: 0,
         title: Text(widget.playlistName, style: const TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SearchAndPlayPage()),
+              );
+            },
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.white))
@@ -173,15 +191,9 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
                               ),
                               trailing: IconButton(
                                 icon: const Icon(Icons.play_arrow, color: Colors.white),
-                                onPressed: () {
-                                  final audioService = Provider.of<AudioPlayerService>(context, listen: false);
-                                  audioService.playPlaylist(_tracks, index);
-                                },
+                                onPressed: () => _playTrack(index),
                               ),
-                              onTap: () {
-                                final audioService = Provider.of<AudioPlayerService>(context, listen: false);
-                                audioService.playPlaylist(_tracks, index);
-                              },
+                              onTap: () => _playTrack(index),
                             );
                           },
                         ),

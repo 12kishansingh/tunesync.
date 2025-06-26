@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunesync/services/audio_player.dart';
-import 'package:marquee/marquee.dart'; // Added package
+import 'package:marquee/marquee.dart';
 
 class FullScreenPlayer extends StatefulWidget {
   const FullScreenPlayer({super.key});
@@ -13,39 +13,34 @@ class FullScreenPlayer extends StatefulWidget {
 class _FullScreenPlayerState extends State<FullScreenPlayer> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(179, 98, 95, 95),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'NOW PLAYING',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            letterSpacing: 2,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: Consumer<AudioPlayerService>(
-        builder: (context, audioService, child) {
-          final isActive = audioService.currentTitle != null;
-          final title = audioService.currentTitle ?? 'Unknown Song';
-          final artist = audioService.currentArtist ?? 'Unknown Artist';
+    return Consumer<AudioPlayerService>(
+      builder: (context, audioService, child) {
+        final isActive = audioService.currentTitle != null;
+        final title = audioService.currentTitle ?? 'Unknown Song';
+        final artist = audioService.currentArtist ?? 'Unknown Artist';
 
-          if (!isActive) {
-            return const Center(
+        if (!isActive) {
+          return Scaffold(
+            backgroundColor: const Color.fromARGB(179, 98, 95, 95),
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon:
+                    const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: const Text(
+                'NOW PLAYING',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  letterSpacing: 2,
+                ),
+              ),
+              centerTitle: true,
+            ),
+            body: const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -62,10 +57,36 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
                   ),
                 ],
               ),
-            );
-          }
+            ),
+          );
+        }
 
-          return Padding(
+        return Scaffold(
+          backgroundColor: const Color.fromARGB(179, 98, 95, 95),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: const Text(
+              'NOW PLAYING',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                letterSpacing: 2,
+              ),
+            ),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                onPressed: () {},
+              ),
+            ],
+          ),
+          body: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
               children: [
@@ -79,18 +100,21 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
                           width: 300,
                           height: 300,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
                             width: 300,
                             height: 300,
                             color: Colors.grey[800],
-                            child: const Icon(Icons.music_note, color: Colors.white, size: 100),
+                            child: const Icon(Icons.music_note,
+                                color: Colors.white, size: 100),
                           ),
                         )
                       : Container(
                           width: 300,
                           height: 300,
                           color: Colors.grey[800],
-                          child: const Icon(Icons.music_note, color: Colors.white, size: 100),
+                          child: const Icon(Icons.music_note,
+                              color: Colors.white, size: 100),
                         ),
                 ),
                 const SizedBox(height: 40),
@@ -134,7 +158,7 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
                       builder: (context, durationSnapshot) {
                         final position = positionSnapshot.data ?? Duration.zero;
                         final duration = durationSnapshot.data ?? Duration.zero;
-                        
+
                         return Column(
                           children: [
                             Slider(
@@ -148,21 +172,26 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
                                   ? duration.inSeconds.toDouble()
                                   : 1.0,
                               onChanged: (value) {
-                                audioService.seek(Duration(seconds: value.toInt()));
+                                audioService
+                                    .seek(Duration(seconds: value.toInt()));
                               },
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     audioService.formatDuration(position),
-                                    style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                                    style: TextStyle(
+                                        color: Colors.grey[400], fontSize: 12),
                                   ),
                                   Text(
                                     audioService.formatDuration(duration),
-                                    style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                                    style: TextStyle(
+                                        color: Colors.grey[400], fontSize: 12),
                                   ),
                                 ],
                               ),
@@ -183,21 +212,21 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
                       onPressed: audioService.toggleShuffle,
                       icon: Icon(
                         Icons.shuffle,
-                        color: audioService.shuffleModeEnabled 
-                            ? Colors.teal 
+                        color: audioService.shuffleModeEnabled
+                            ? Colors.teal
                             : Colors.white,
                         size: 40,
                       ),
                     ),
                     // Previous Button
                     IconButton(
-                      onPressed: audioService.hasPrevious 
-                          ? audioService.previousSong 
+                      onPressed: audioService.hasPrevious
+                          ? audioService.previousSong
                           : null,
                       icon: Icon(
                         Icons.skip_previous,
-                        color: audioService.hasPrevious 
-                            ? Colors.white 
+                        color: audioService.hasPrevious
+                            ? Colors.white
                             : Colors.grey[600],
                         size: 40,
                       ),
@@ -211,8 +240,8 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
                       child: IconButton(
                         onPressed: audioService.togglePlayPause,
                         icon: Icon(
-                          audioService.isPlaying 
-                              ? Icons.pause 
+                          audioService.isPlaying
+                              ? Icons.pause
                               : Icons.play_arrow,
                           color: Colors.black,
                           size: 40,
@@ -221,13 +250,12 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
                     ),
                     // Next Button
                     IconButton(
-                      onPressed: audioService.hasNext 
-                          ? audioService.nextSong 
-                          : null,
+                      onPressed:
+                          audioService.hasNext ? audioService.nextSong : null,
                       icon: Icon(
                         Icons.skip_next,
-                        color: audioService.hasNext 
-                            ? Colors.white 
+                        color: audioService.hasNext
+                            ? Colors.white
                             : Colors.grey[600],
                         size: 40,
                       ),
@@ -237,8 +265,8 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
                       onPressed: audioService.toggleLoop,
                       icon: Icon(
                         Icons.loop,
-                        color: audioService.loopOneEnabled 
-                            ? Colors.teal 
+                        color: audioService.loopOneEnabled
+                            ? Colors.teal
                             : Colors.white,
                         size: 40,
                       ),
@@ -248,9 +276,9 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
                 const Spacer(),
               ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
