@@ -11,3 +11,4 @@ class Track {
     required this.coverUrl,
   });
 }
+

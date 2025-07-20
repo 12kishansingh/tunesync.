@@ -8,6 +8,8 @@ import 'package:tunesync/pages/profle_info.dart';
 import 'package:tunesync/pages/search_and_play.dart';
 import 'package:tunesync/services/audio_player.dart';
 import 'package:tunesync/widgets/mini_player.dart';
+import 'package:tunesync/pages/connect.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,9 +21,9 @@ class _HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser!;
   int _selectedIndex = 0;
 
-  static List<Widget> _pages() => const [
+  static List<Widget> _pages() =>  [
         HomePage1(),
-        Center(child: Text("Connect Page")),
+        ConnectPage(), 
         Center(child: Text("Library Page")),
         ArtistsPage(),
       ];
