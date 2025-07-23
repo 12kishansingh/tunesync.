@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tunesync/model/friend_request.dart';
 import 'package:tunesync/model/user.dart';
+import 'package:tunesync/services/friend_service.dart';
 // The ConnectPage widget lets users find, send, and respond to friend requests.
 class ConnectPage extends StatefulWidget {
   @override
@@ -11,8 +12,8 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
 
-  // Replace this with data from your backend or database.
-  // For now, using mock/sample data for illustration.
+  final FriendService _friendService = FriendService();
+
   List<User> _suggestedUsers = [
     User(id: '1', name: 'Alice Johnson', email: 'alice@example.com', avatar: '🦸‍♀️', isOnline: true),
     User(id: '2', name: 'Bob Smith', email: 'bob@example.com', avatar: '👨‍💻', isOnline: false),
@@ -20,22 +21,12 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
     User(id: '4', name: 'David Wilson', email: 'david@example.com', avatar: '🧑‍🚀', isOnline: false),
   ];
 
-  List<FriendRequest> _sentRequests = [];
-  List<FriendRequest> _receivedRequests = [
-    FriendRequest(
-      id: '1',
-      sender: User(id: '5', name: 'Emma Brown', email: 'emma@example.com', avatar: '👩‍🔬', isOnline: true),
-      receiver: User(id: 'me', name: 'You', email: 'you@example.com', avatar: '😊'),
-      timestamp: DateTime.now().subtract(Duration(hours: 2)),
-    ),
-  ];
-
   String _searchText = '';
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -47,12 +38,7 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
 
   void _sendFriendRequest(User user) {
     setState(() {
-      _sentRequests.add(FriendRequest(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        sender: User(id: 'me', name: 'You', email: 'you@example.com', avatar: '😊'),
-        receiver: user,
-        timestamp: DateTime.now(),
-      ));
+      _friendService.sendRequest(user);
       _suggestedUsers.remove(user);
     });
     ScaffoldMessenger.of(context).showSnackBar(
@@ -65,7 +51,7 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
 
   void _acceptFriendRequest(FriendRequest request) {
     setState(() {
-      _receivedRequests.remove(request);
+      _friendService.acceptRequest(request);
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -77,7 +63,7 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
 
   void _rejectFriendRequest(FriendRequest request) {
     setState(() {
-      _receivedRequests.remove(request);
+      _friendService.declineRequest(request);
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -96,27 +82,49 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
           email.contains(_searchText.toLowerCase());
     }).toList();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Connect'),
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: 'Discover', icon: Icon(Icons.explore)),
-            Tab(text: 'Sent (${_sentRequests.length})', icon: Icon(Icons.send)),
-            Tab(text: 'Received (${_receivedRequests.length})', icon: Icon(Icons.inbox)),
-          ],
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+          child: Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            color: Theme.of(context).colorScheme.surface,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+              child: TabBar(
+                controller: _tabController,
+                labelColor: Theme.of(context).colorScheme.primary,
+                unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                indicator: BoxDecoration(
+                  borderRadius: BorderRadius.horizontal(left: Radius.circular(30), right: Radius.circular(30)),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.09),
+                ),
+                labelPadding: EdgeInsets.symmetric(horizontal: 2),
+                tabs: [
+                  Tab(text: 'Discover', icon: Icon(Icons.explore, size: 16)),
+                  Tab(text: 'Sent (${_friendService.sentRequests.length})', icon: Icon(Icons.send, size: 16)),
+                  Tab(text: 'Received (${_friendService.receivedRequests.length})', icon: Icon(Icons.inbox, size: 16)),
+                  Tab(text: 'Friends (${_friendService.friends.length})', icon: Icon(Icons.people, size: 16)),
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildDiscoverTab(filteredUsers),
-          _buildSentRequestsTab(),
-          _buildReceivedRequestsTab(),
-        ],
-      ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildDiscoverTab(filteredUsers),
+              _buildSentRequestsTab(),
+              _buildReceivedRequestsTab(),
+              _buildFriendsTab(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -124,7 +132,7 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: TextField(
             controller: _searchController,
             decoration: InputDecoration(
@@ -132,10 +140,13 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
               prefixIcon: Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide.none,
               ),
               filled: true,
-              fillColor: Colors.grey[100],
+              fillColor: Theme.of(context).colorScheme.surfaceVariant,
+              contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
             ),
+            style: Theme.of(context).textTheme.bodyLarge,
             onChanged: (value) {
               setState(() {
                 _searchText = value;
@@ -149,6 +160,7 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
                   child: Text('No users found', style: TextStyle(color: Colors.grey)),
                 )
               : ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 16),
                   itemCount: users.length,
                   itemBuilder: (context, index) {
                     return _buildUserCard(users[index], true);
@@ -160,7 +172,8 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
   }
 
   Widget _buildSentRequestsTab() {
-    if (_sentRequests.isEmpty) {
+    final sentRequests = _friendService.sentRequests;
+    if (sentRequests.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -173,15 +186,16 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
       );
     }
     return ListView.builder(
-      itemCount: _sentRequests.length,
+      itemCount: sentRequests.length,
       itemBuilder: (context, index) {
-        return _buildRequestCard(_sentRequests[index], false);
+        return _buildRequestCard(sentRequests[index], false);
       },
     );
   }
 
   Widget _buildReceivedRequestsTab() {
-    if (_receivedRequests.isEmpty) {
+    final receivedRequests = _friendService.receivedRequests;
+    if (receivedRequests.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -194,21 +208,75 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
       );
     }
     return ListView.builder(
-      itemCount: _receivedRequests.length,
+      itemCount: receivedRequests.length,
       itemBuilder: (context, index) {
-        return _buildRequestCard(_receivedRequests[index], true);
+        return _buildRequestCard(receivedRequests[index], true);
+      },
+    );
+  }
+
+  Widget _buildFriendsTab() {
+    final friends = _friendService.friends;
+    if (friends.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.people_outline, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text('No friends yet', style: TextStyle(fontSize: 18, color: Colors.grey)),
+          ],
+        ),
+      );
+    }
+    return ListView.builder(
+      itemCount: friends.length,
+      itemBuilder: (context, index) {
+        final user = friends[index];
+        return Card(
+          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListTile(
+            leading: CircleAvatar(
+              radius: 25,
+              child: Text(user.avatar, style: TextStyle(fontSize: 20)),
+            ),
+            title: Text(user.name, style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(user.email),
+            trailing: IconButton(
+              icon: Icon(Icons.remove_circle, color: Colors.red),
+              tooltip: 'Remove Friend',
+              onPressed: () {
+                setState(() {
+                  _friendService.removeFriend(user);
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Removed ${user.name} from friends'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              },
+            ),
+          ),
+        );
       },
     );
   }
 
   Widget _buildUserCard(User user, bool canSendRequest) {
+    final alreadySent = _friendService.sentRequests.any((r) => r.receiver.id == user.id);
+    final alreadyFriend = _friendService.friends.any((f) => f.id == user.id);
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      color: Theme.of(context).colorScheme.surface,
       child: ListTile(
         leading: Stack(
           children: [
             CircleAvatar(
               radius: 25,
+              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
               child: Text(user.avatar, style: TextStyle(fontSize: 20)),
             ),
             if (user.isOnline)
@@ -241,17 +309,26 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
             ),
           ],
         ),
-        trailing: canSendRequest
-            ? ElevatedButton.icon(
-                onPressed: () => _sendFriendRequest(user),
-                icon: Icon(Icons.person_add, size: 16),
-                label: Text('Add'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                ),
-              )
-            : Text('Request Sent', style: TextStyle(color: Colors.orange)),
+        trailing: alreadyFriend
+            ? Text('Friend', style: TextStyle(color: Colors.green))
+            : alreadySent
+                ? Text('Request Sent', style: TextStyle(color: Colors.orange))
+                : canSendRequest
+                    ? ElevatedButton.icon(
+                        onPressed: () => _sendFriendRequest(user),
+                        icon: Icon(Icons.person_add, size: 16),
+                        label: Text('Add'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                      )
+                    : null,
         isThreeLine: true,
       ),
     );
