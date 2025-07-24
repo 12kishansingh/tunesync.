@@ -92,4 +92,24 @@ class FriendService {
               avatar: doc['avatar'] ?? '',
             )).toList());
   }
+
+  // Search users by name or email (case-insensitive, excludes current user)
+  Future<List<User>> searchUsers(String query) async {
+    if (query.trim().isEmpty) return [];
+    final lowerQuery = query.toLowerCase();
+    final usersSnapshot = await _firestore.collection('users').get();
+    return usersSnapshot.docs
+        .map((doc) => User(
+              id: doc['id'],
+              name: doc['name'] ?? '',
+              email: doc['email'] ?? '',
+              avatar: doc['avatar'] ?? '',
+              isOnline: doc['isOnline'] ?? false,
+            ))
+        .where((user) =>
+            user.id != currentUserId &&
+            (user.name.toLowerCase().contains(lowerQuery) ||
+             user.email.toLowerCase().contains(lowerQuery)))
+        .toList();
+  }
 } 
