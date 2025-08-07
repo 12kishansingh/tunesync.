@@ -18,7 +18,7 @@
 
 | Home Screen | Search Song | Now Playing | Profile | connect Page |
 |-------------|-------------|-------------|
-| ![Home](assets/homepage.png) | ![Search Song](assets/searchpage.png) | ![Now Playing](assets/musicplay.png) ![Profile](assets/profilepage.png) ![Connect Page](assets/connectpage.png) |
+| ![Home](lib/assets/homepage.png) | ![Search Song](lib/assets/searchpage.png) | ![Now Playing](lib/assets/musicplay.png) ![Profile](lib/assets/profilepage.png) ![Connect Page](lib/assets/connectpage.png) |
 
 
 
