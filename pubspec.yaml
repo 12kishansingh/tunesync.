@@ -74,6 +74,11 @@ flutter:
     - lib/assets/pic1.png
     - lib/assets/pic2.png
     - lib/assets/pic3.png
+    - lib/assets/homepage.png
+    - lib/assets/musicplay.png
+    - lib/assets/connectpage.png
+    - lib/assets/profilepage.png
+    - lib/assets/searchpage.png
 
   #   - images/a_dot_ham.jpeg
 

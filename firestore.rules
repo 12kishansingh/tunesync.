@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow users to read their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Allow other authenticated users to read basic user info for search
+      allow read: if request.auth != null && 
+        (resource.data.keys().hasAll(['name', 'email', 'avatar', 'isOnline']));
+    }
+    
+    // Friend requests - users can read/write their own requests
+    match /friend_requests/{requestId} {
+      allow read, write: if request.auth != null && 
+        (resource.data.senderId == request.auth.uid || 
+         resource.data.receiverId == request.auth.uid);
+    }
+    
+    // Friends subcollection - users can read/write their own friends list
+    match /users/{userId}/friends/{friendId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+} 

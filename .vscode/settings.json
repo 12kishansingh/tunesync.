@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/Users/ks888/Documents/flutter_project/tunesync/linux"
+    "cmake.sourceDirectory": "C:/Users/ks888/Documents/flutter_project/tunesync/linux",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

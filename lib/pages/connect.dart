@@ -4,6 +4,8 @@ import 'package:tunesync/model/user.dart';
 import 'package:tunesync/services/friend_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'dart:async';
+
 // The ConnectPage widget lets users find, send, and respond to friend requests.
 class ConnectPage extends StatefulWidget {
   @override
@@ -27,17 +29,30 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
   List<User> _searchResults = [];
   bool _isSearching = false;
   String _searchText = '';
+  Timer? _debounceTimer;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _checkAuthStatus();
+  }
+
+  void _checkAuthStatus() {
+    final currentUser = _auth.currentUser;
+    if (currentUser != null) {
+      print('User is authenticated: ${currentUser.uid}');
+      print('User email: ${currentUser.email}');
+    } else {
+      print('User is NOT authenticated');
+    }
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -72,6 +87,53 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
         backgroundColor: Colors.orange,
       ),
     );
+  }
+
+  Future<void> _performSearch(String query) async {
+    if (query.trim().isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    // Record start time for minimum loading duration
+    final startTime = DateTime.now();
+
+    try {
+      final results = await _friendService.searchUsers(query);
+      
+      // Ensure minimum loading time of 300ms for better UX
+      final elapsed = DateTime.now().difference(startTime);
+      if (elapsed.inMilliseconds < 300) {
+        await Future.delayed(Duration(milliseconds: 300 - elapsed.inMilliseconds));
+      }
+      
+      if (mounted) {
+        setState(() {
+          _searchResults = results;
+          _isSearching = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _searchResults = [];
+          _isSearching = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error searching users: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -150,6 +212,53 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
   Widget _buildDiscoverTab(List<User> users) {
     return Column(
       children: [
+        // Authentication status indicator
+        Container(
+          padding: const EdgeInsets.all(8),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: _auth.currentUser != null ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: _auth.currentUser != null ? Colors.green : Colors.red,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                _auth.currentUser != null ? Icons.check_circle : Icons.error,
+                color: _auth.currentUser != null ? Colors.green : Colors.red,
+                size: 16,
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _auth.currentUser != null 
+                    ? 'Authenticated: ${_auth.currentUser!.email}'
+                    : 'Not authenticated',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: _auth.currentUser != null ? Colors.green : Colors.red,
+                  ),
+                ),
+              ),
+              if (_auth.currentUser != null)
+                TextButton(
+                  onPressed: () async {
+                    final success = await _friendService.testFirestoreAccess();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(success ? 'Firestore access test passed!' : 'Firestore access test failed!'),
+                        backgroundColor: success ? Colors.green : Colors.red,
+                      ),
+                    );
+                  },
+                  child: Text('Test Access', style: TextStyle(fontSize: 10)),
+                ),
+            ],
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: TextField(
@@ -166,29 +275,44 @@ class _ConnectPageState extends State<ConnectPage> with TickerProviderStateMixin
               contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
             ),
             style: Theme.of(context).textTheme.bodyLarge,
-            onChanged: (value) async {
+            onChanged: (value) {
               setState(() {
                 _searchText = value;
-                _isSearching = true;
               });
-              if (value.trim().isEmpty) {
-                setState(() {
-                  _searchResults = [];
-                  _isSearching = false;
-                });
-                return;
-              }
-              final results = await _friendService.searchUsers(value);
-              setState(() {
-                _searchResults = results;
-                _isSearching = false;
+              
+              // Cancel previous timer
+              _debounceTimer?.cancel();
+              
+              // Set a new timer for debouncing
+              _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+                _performSearch(value);
               });
             },
           ),
         ),
         Expanded(
           child: _isSearching
-              ? Center(child: CircularProgressIndicator())
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Searching for users...',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
               : _searchText.isEmpty
                   ? Center(child: Text('Type to search for users', style: TextStyle(color: Colors.grey)))
                   : _searchResults.isEmpty
