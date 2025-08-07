@@ -2,6 +2,8 @@
 
 **TuneSync** is a modern Flutter app that allows two users to connect and listen to the same music simultaneously in real-time. Whether you're syncing tunes with friends or just vibing together remotely, TuneSync brings shared music experiences to life.
 
+---
+
 ## 🚀 Features
 
 - 🔄 **Real-time Tune Synchronization** – Seamlessly sync music playback across devices.
@@ -16,11 +18,28 @@
 
 ## 📸 Screenshots
 
-| Home Screen | Search Song | Now Playing | Profile | connect Page |
-|-------------|-------------|-------------|
-| ![Home](lib/assets/homepage.png) | ![Search Song](lib/assets/searchpage.png) | ![Now Playing](lib/assets/musicplay.png) ![Profile](lib/assets/profilepage.png) ![Connect Page](lib/assets/connectpage.png) |
+### 🏠 Home Screen
+![Home Screen](lib/assets/homepage.png)
 
+---
 
+### 🔍 Search Song
+![Search Song](lib/assets/searchpage.png)
+
+---
+
+### 🎵 Now Playing
+![Now Playing](lib/assets/musicplay.png)
+
+---
+
+### 👤 Profile Page
+![Profile Page](lib/assets/profilepage.png)
+
+---
+
+### 🔗 Connect Page
+![Connect Page](lib/assets/connectpage.png)
 
 ---
 
